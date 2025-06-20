@@ -70,7 +70,7 @@ dist
 
 # Gatsby files
 .cache/
-public
+# Note: public folder is kept for our frontend assets
 
 # Vuepress build output
 .vuepress/dist

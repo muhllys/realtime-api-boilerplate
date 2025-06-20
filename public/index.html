@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenAI Realtime Voice Agent</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="title">
+                <span class="icon">🎙️</span>
+                OpenAI Realtime Voice Agent
+            </h1>
+            <p class="subtitle">WebRTC-powered voice conversations with GPT-4o</p>
+        </header>
+
+        <main class="main">
+            <!-- AI Instructions Panel -->
+            <div class="instructions-panel">
+                <h2 class="section-title">AI Instructions</h2>
+                <div class="instructions-content">
+                    <textarea 
+                        id="ai-instructions" 
+                        class="instructions-textarea" 
+                        placeholder="Enter instructions for the AI assistant (e.g., 'You are a helpful coding assistant. Always provide examples and explain your reasoning. Use a friendly and professional tone.')"
+                        rows="4">You are a helpful AI assistant. Respond naturally and conversationally. Be concise but thorough in your explanations.</textarea>
+                    <div class="instructions-info">
+                        <small>
+                            <strong>💡 Tip:</strong> These instructions define the AI's personality and behavior. 
+                            Changes take effect when you start a new session. Supports multiple languages and special characters.
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Panel -->
+            <div class="status-panel">
+                <div class="status-item">
+                    <span class="status-label">Connection</span>
+                    <span id="status-connection" class="status-value status-disconnected">Disconnected</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Voice</span>
+                    <span id="status-voice" class="status-value">Ash</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Model</span>
+                    <span id="status-model" class="status-value">GPT-4o Realtime</span>
+                </div>
+            </div>
+
+            <!-- Voice Controls -->
+            <div class="voice-controls">
+                <div class="voice-buttons">
+                    <button id="start-session" class="btn btn-primary">
+                        <span class="btn-icon">🎤</span>
+                        Start Voice Session
+                    </button>
+                    <button id="stop-session" class="btn btn-danger" disabled>
+                        <span class="btn-icon">🛑</span>
+                        Stop Session
+                    </button>
+                    <button id="mute-btn" class="btn btn-outline" disabled>
+                        <span class="btn-icon">🔇</span>
+                        Mute
+                    </button>
+                </div>
+                <div class="voice-options">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="voice-interruption" class="voice-checkbox" checked>
+                        <span class="checkbox-text">
+                            <strong>Voice Interruption</strong><br>
+                            <small>Automatically interrupt AI when you start speaking</small>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Audio Visualization -->
+            <div class="audio-visualization">
+                <canvas id="audio-canvas" width="400" height="150"></canvas>
+                <div class="audio-levels">
+                    <div class="level-meter">
+                        <span class="level-label">Input</span>
+                        <div class="level-bar">
+                            <div id="input-level" class="level-fill"></div>
+                        </div>
+                    </div>
+                    <div class="level-meter">
+                        <span class="level-label">Output</span>
+                        <div class="level-bar">
+                            <div id="output-level" class="level-fill"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Context Injection -->
+            <div class="context-injection">
+                <h2 class="section-title">Context Injection</h2>
+                <div class="context-controls">
+                    <div class="context-input-area">
+                        <textarea 
+                            id="context-input" 
+                            class="context-textarea" 
+                            placeholder="Enter context to inject into the conversation (e.g., 'The user is currently in a meeting' or 'Remember: the user prefers technical explanations')"
+                            rows="4"></textarea>
+                        <button id="send-context" class="btn btn-secondary" disabled>
+                            <span class="btn-icon">📝</span>
+                            Send Context
+                        </button>
+                    </div>
+                    <div class="context-options">
+                        <div class="context-option">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="interrupt-context" class="context-checkbox">
+                                <span class="checkbox-text">
+                                    <strong>Interrupt Mode</strong><br>
+                                    <small>When enabled: Context interrupts AI's current response immediately</small><br>
+                                    <small>When disabled: Context waits for AI to finish current turn</small>
+                                </span>
+                            </label>
+                        </div>
+                        <div class="context-option">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="background-context" class="context-checkbox">
+                                <span class="checkbox-text">
+                                    <strong>Background Mode</strong><br>
+                                    <small>When enabled: AI digests context silently without responding</small><br>
+                                    <small>When disabled: AI may acknowledge or respond to the context</small>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conversation Log -->
+            <div class="conversation-section">
+                <h2 class="section-title">Conversation Log</h2>
+                <div id="conversation-log" class="conversation-log"></div>
+                <button id="clear-log" class="btn btn-outline">Clear Log</button>
+            </div>
+
+            <!-- Debug Panel -->
+            <details class="debug-panel">
+                <summary class="debug-summary">Debug Information</summary>
+                <div id="debug-content" class="debug-content">
+                    <h3>Token Usage & Pricing</h3>
+                    <div class="token-stats">
+                        <div class="token-row">
+                            <span class="token-label">Input Tokens (Text):</span>
+                            <span id="input-text-tokens" class="token-value">0</span>
+                            <span class="token-cost">($<span id="input-text-cost">0.00</span>)</span>
+                        </div>
+                        <div class="token-row">
+                            <span class="token-label">Input Tokens (Audio):</span>
+                            <span id="input-audio-tokens" class="token-value">0</span>
+                            <span class="token-cost">($<span id="input-audio-cost">0.00</span>)</span>
+                        </div>
+                        <div class="token-row">
+                            <span class="token-label">Output Tokens (Text):</span>
+                            <span id="output-text-tokens" class="token-value">0</span>
+                            <span class="token-cost">($<span id="output-text-cost">0.00</span>)</span>
+                        </div>
+                        <div class="token-row">
+                            <span class="token-label">Output Tokens (Audio):</span>
+                            <span id="output-audio-tokens" class="token-value">0</span>
+                            <span class="token-cost">($<span id="output-audio-cost">0.00</span>)</span>
+                        </div>
+                        <div class="token-row token-total">
+                            <span class="token-label">Total Tokens:</span>
+                            <span id="total-tokens" class="token-value">0</span>
+                            <span class="token-cost">($<span id="total-cost">0.00</span>)</span>
+                        </div>
+                        <div class="pricing-info">
+                            <small>
+                                <strong>Realtime API Pricing (per 1M tokens):</strong><br>
+                                Text Input: $<span id="price-text-input">5.00</span> (Cached: $<span id="price-text-input-cached">2.50</span>) | 
+                                Audio Input: $<span id="price-audio-input">40.00</span> (Cached: $<span id="price-audio-input-cached">2.50</span>)<br>
+                                Text Output: $<span id="price-text-output">20.00</span> | 
+                                Audio Output: $<span id="price-audio-output">80.00</span><br>
+                                <em>Model: <span id="current-model">gpt-4o-realtime-preview</span></em><br>
+                                <strong>Note:</strong> Current calculations use non-cached rates. Cached tokens (repeated prompts) cost significantly less.
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <h3>Session Info</h3>
+                    <pre id="session-info" class="debug-text">No session active</pre>
+                    
+                    <h3>Recent Events</h3>
+                    <pre id="event-log" class="debug-text">Waiting for events...</pre>
+                </div>
+            </details>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Built with OpenAI Realtime API • WebRTC • Security Best Practices</p>
+            <div class="footer-links">
+                <a href="https://platform.openai.com/docs/guides/realtime" target="_blank">API Docs</a>
+                <a href="https://github.com/openai/openai-realtime-api-beta" target="_blank">GitHub</a>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="voice-agent.js"></script>
+</body>
+</html> 

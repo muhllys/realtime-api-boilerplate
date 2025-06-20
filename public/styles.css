@@ -151,8 +151,7 @@ body {
 /* Voice Controls */
 .voice-controls {
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  justify-content: center;
   align-items: center;
 }
 
@@ -161,16 +160,6 @@ body {
   gap: 1rem;
   justify-content: center;
   flex-wrap: wrap;
-}
-
-.voice-options {
-  display: flex;
-  justify-content: center;
-}
-
-.voice-checkbox {
-  width: auto;
-  margin-right: 0.5rem;
 }
 
 /* Buttons */

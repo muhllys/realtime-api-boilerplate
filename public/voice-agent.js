@@ -117,7 +117,6 @@ class VoiceAgent {
       priceAudioOutput: document.getElementById('price-audio-output'),
       priceTextInputCached: document.getElementById('price-text-input-cached'),
       priceAudioInputCached: document.getElementById('price-audio-input-cached'),
-      voiceInterruption: document.getElementById('voice-interruption'),
     };
     
     this.setupEventListeners();
@@ -1005,10 +1004,7 @@ class VoiceAgent {
   }
 
   detectVoiceActivity(inputLevel) {
-    // Only proceed if voice interruption is enabled
-    if (!this.elements.voiceInterruption.checked) {
-      return;
-    }
+    // Voice interruption is always enabled (UI toggle removed)
     
     // Debug logging every 50 frames (~500ms) to avoid spam
     if (Date.now() - this.lastVoiceActivityCheck > 500) {
@@ -1019,7 +1015,7 @@ class VoiceAgent {
         duration: this.voiceActivityDuration,
         isAssistantSpeaking: this.isAssistantSpeaking,
         hasActiveResponse: this.hasActiveResponse,
-        interruptionEnabled: this.elements.voiceInterruption.checked
+        interruptionEnabled: true // Always enabled
       });
       this.lastVoiceActivityCheck = Date.now();
     }
